@@ -1,0 +1,15 @@
+fastapi 
+uvicorn[standard]
+pydantic 
+pydantic-settings 
+httpx 
+asyncpg 
+redis[hiredis]
+langchain 
+langchain-google-genai
+langchain-core 
+langsmith 
+python-dotenv 
+mcp[cli]
+fastmcp 
+starlette
