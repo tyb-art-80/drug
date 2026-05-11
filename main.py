@@ -551,11 +551,26 @@ async def _lifespan(app: Starlette):
     await db_close()
 
 
+
+
 mcp_asgi = mcp.sse_app()
 combined_app = Starlette(
     routes=[Mount("/mcp", app=mcp_asgi), Mount("/", app=rest_app)],
     lifespan=_lifespan,
 )
 
-# Alias for uvicorn (uvicorn main:app)
-app = combined_app
+class HostOverrideMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            headers = [
+                (b"host", b"localhost:8004") if k == b"host" else (k, v)
+                for k, v in scope.get("headers", [])
+            ]
+            scope = {**scope, "headers": headers}
+        await self.app(scope, receive, send)
+
+# Wrap the combined app
+app = HostOverrideMiddleware(combined_app)
